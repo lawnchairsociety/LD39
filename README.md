@@ -1,4 +1,4 @@
-# Dept of Water & Power??? (LD39) (Theme: Running out of Power)
+# Dept of Water & Power Strategy Game
 
 You're an employee of the Department of Water & Power. There was an accident at one of the main power plants in town and a brownout is threatening to kill power to the entire town. Can you avert the impending disaster??
 
@@ -36,9 +36,9 @@ TODO: Describe the installation process
 
 ## Contributing
 1. Fork it, please.
-2. Create your branch: 'git checkout -b new-feature-name'
-3. Commit your changes: 'git commit -am 'add some new feature''
-4. Push to the branch: 'git push origin new-feature-name'
+2. Create your branch: `git checkout -b new-feature-name`
+3. Commit your changes: `git commit -am 'add some new feature'`
+4. Push to the branch: `git push origin new-feature-name`
 5. Submit a pull request
 
 ## History
