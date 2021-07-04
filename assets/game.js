@@ -1,47 +1,85 @@
 var Game = {
-  _display: null,
-  _currentScreen: null,
+  display: null,
+  map: {},
+  displaySize: {
+    width: 160,
+    height: 50
+  },
+  engine: null,
+  player: null,
+  pedro: null,
+  bananas: null,
+
   init: function() {
-    this._display = new ROT.Display({width: 100, height: 45});
-    var game = this;
-    var bindEventToScreen = function(event) {
-      window.addEventListener(event, function(e) {
-        if (game._currentScreen !== null) {
-          game._currentScreen.handleInput(event, e);
-        }
-      });
+    this.display = new ROT.Display();//this.displaySize);
+    document.body.appendChild(this.display.getContainer());
+
+    this._generateMap();
+
+    var scheduler = new ROT.Scheduler.Simple();
+    scheduler.add(this.player, true);
+    scheduler.add(this.pedro, true);
+    this.engine = new ROT.Engine(scheduler);
+    this.engine.start();
+  }
+};
+
+Game._generateMap = function() {
+  var digger = new ROT.Map.Digger();
+  var freeCells = [];
+
+  var digCallback = function(x, y, value) {
+    if (value) { // dont store walls
+      return;
     }
 
-    bindEventToScreen('keydown');
-    bindEventToScreen('keyup');
-    bindEventToScreen('keypress');
-  },
-  getDisplay: function() {
-    return this._display;
-  },
-  switchScreen: function(screen) {
-    if (this._currentScreen !== null) {
-      this._currentScreen.exit();
-    }
+    var key = x + "," + y;
+    freeCells.push(key);
+    this.map[key] = Glyphs.corridor;
+  }
 
-    this.getDisplay().clear();
+  digger.create(digCallback.bind(this));
 
-    this._currentScreen = screen;
-    if (this._currentScreen) {
-      this._currentScreen.enter();
-      this._currentScreen.render(this._display);
+  this._generateBoxes(freeCells);
+
+  this._drawWholeMap();
+
+  this.player = this._createBeing(Player, freeCells);
+  this.pedro = this._createBeing(Pedro, freeCells);
+};
+
+Game._generateBoxes = function(freeCells) {
+  for (var i = 0; i < 10; i++) {
+    var index = Math.floor(ROT.RNG.getUniform() * freeCells.length);
+    var key = freeCells.splice(index, 1)[0];
+    this.map[key] = Glyphs.box;
+    if (!i) {
+      this.bananas = key; // banana is in the first box
     }
   }
-}
+};
 
-window.onload = function() {
-  if (!ROT.isSupported()) {
-    alert("The rot.js library is not supported by your browser.")
-  } else {
-    Game.init();
-
-    document.body.appendChild(Game.getDisplay().getContainer());
-
-    Game.switchScreen(Game.Screen.mainScreen);
+Game._drawWholeMap = function() {
+  for (var key in this.map)
+  {
+    var parts = key.split(",");
+    var x = parseInt(parts[0]);
+    var y = parseInt(parts[1]);
+    if (this.map[key] == Glyphs.box) {
+      this.display.draw(x, y, this.map[key], Colors.interactive);  
+    }
+    else {
+      this.display.draw(x, y, this.map[key], Colors.normal);
+    }
   }
-}
+};
+
+Game._createBeing = function(what, freeCells) {
+  var index = Math.floor(ROT.RNG.getUniform() * freeCells.length);
+  var key = freeCells.splice(index, 1)[0];
+  var parts = key.split(",");
+  var x = parseInt(parts[0]);
+  var y = parseInt(parts[1]);
+
+  return new what(x, y);
+};
